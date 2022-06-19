@@ -27,13 +27,29 @@ namespace WeatherDuration
         private static readonly string startedStr = "Started".Translate();
         private static readonly string lastedStr = "Lasted".Translate();
 
-        private static string AddDuration(WeatherInfo info)
+        private static string ExpandDescription(WeatherInfo info)
         {
+            var def = info.def;
             var location = Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile);
             var started = GenDate.DateFullStringAt(GenDate.TickGameToAbs(info.startTick), location);
             // GameCondition does Colorize, but it does not seem to take effect.
             var lasted = (nowTick - info.startTick).ToStringTicksToPeriod() /* .Colorize(ColoredText.DateTimeColor) */;
-            return $"{info.def.LabelCap}\n{startedStr}: {started}\n{lastedStr}: {lasted}\n\n{info.def.description}";
+            var effects = "";
+            if (def.accuracyMultiplier != 1.0f || def.moveSpeedMultiplier != 1.0f)
+            {
+                effects = "\n";
+                UpdateEffects(ref effects, def.accuracyMultiplier, StatDefOf.ShootingAccuracyPawn.LabelCap);
+                UpdateEffects(ref effects, def.moveSpeedMultiplier, StatDefOf.MoveSpeed.LabelCap);
+            }
+            return $"{def.LabelCap}\n{startedStr}: {started}\n{lastedStr}: {lasted}\n\n{def.description}{effects}";
+        }
+
+        private static void UpdateEffects(ref string effects, float multiplier, string label)
+        {
+            if (multiplier != 1.0f)
+            {
+                effects = $"{effects}\n{(multiplier - 1).ToStringByStyle(ToStringStyle.PercentZero)} {label}";
+            }
         }
 
         [HarmonyPrefix]
@@ -45,7 +61,7 @@ namespace WeatherDuration
                 WeatherInfo info = (tip.text == current.def?.description) ? current : last;
                 if (info.def != null)
                 {
-                    tip.text = AddDuration(info);
+                    tip.text = ExpandDescription(info);
                 }
                 active = false;
             }
