@@ -4,6 +4,7 @@
     <packageId>kathanon.WeatherDuration</packageId>
 	<url>https://github.com/kathanon/RimWorld-WeatherDuration</url>
 	<supportedVersions>
+		<li>1.4</li>
 		<li>1.3</li>
 	</supportedVersions>
 	<description>Adds how long a weather effect has been active to its tooltip, in the same format as for events like volcanic winter.
